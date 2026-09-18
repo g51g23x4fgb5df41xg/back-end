@@ -329,57 +329,114 @@ export class PgCatalogRepository implements CatalogRepository {
     return (result.rowCount ?? 0) > 0;
   }
 
-  /** List categories ordered for storefront display. */
+  /** List categories ordered for storefront display matching Supabase categories schema. */
   public async listCategories(): Promise<Category[]> {
     const result = await this.pool.query(
-      `SELECT id, name, subtitle, image_url AS "imageUrl", category_code AS "categoryCode", display_order AS "displayOrder", bg 
+      `SELECT id, title, subtitle, image_url, button_text 
        FROM categories 
-       ORDER BY display_order ASC, id ASC`
+       ORDER BY id ASC`
     );
-    return result.rows as Category[];
+
+    return result.rows.map((row: any) => {
+      const title = row.title ? String(row.title).trim() : "";
+      const categoryCode = title ? title.toUpperCase() : "GENERAL";
+      const id = Number(row.id);
+
+      return {
+        id,
+        title: row.title ?? "",
+        name: row.title ?? "",
+        subtitle: row.subtitle ?? null,
+        image_url: row.image_url ?? null,
+        imageUrl: row.image_url ?? null,
+        category: categoryCode,
+        categoryCode,
+        display_order: id,
+        displayOrder: id,
+        created_at: null,
+        createdAt: null,
+        bg: null,
+        button_text: row.button_text ?? null,
+        buttonText: row.button_text ?? null,
+      };
+    });
   }
 
-  /** Insert a category. */
+  /** Insert a category matching Supabase categories schema. */
   public async createCategory(input: Record<string, unknown>): Promise<Category> {
+    const title = String(input.title || input.name || "Category").trim();
     const result = await this.pool.query(
-      `INSERT INTO categories (name, subtitle, image_url, category_code, display_order, bg) 
-       VALUES ($1, $2, $3, $4, $5, $6) 
-       RETURNING id, name, subtitle, image_url AS "imageUrl", category_code AS "categoryCode", display_order AS "displayOrder", bg`,
+      `INSERT INTO categories (title, subtitle, image_url, button_text) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING id, title, subtitle, image_url, button_text`,
       [
-        input.name,
+        title,
         input.subtitle ?? null,
         input.imageUrl ?? input.image_url ?? null,
-        input.categoryCode ?? input.category_code ?? "ALL",
-        input.displayOrder ?? input.display_order ?? 0,
-        input.bg ?? null,
+        input.buttonText ?? input.button_text ?? null,
       ]
     );
-    return result.rows[0] as Category;
+    const row = result.rows[0];
+    const categoryCode = row.title ? String(row.title).trim().toUpperCase() : "GENERAL";
+    const id = Number(row.id);
+    return {
+      id,
+      title: row.title ?? "",
+      name: row.title ?? "",
+      subtitle: row.subtitle ?? null,
+      image_url: row.image_url ?? null,
+      imageUrl: row.image_url ?? null,
+      category: categoryCode,
+      categoryCode,
+      display_order: id,
+      displayOrder: id,
+      created_at: null,
+      createdAt: null,
+      bg: null,
+      button_text: row.button_text ?? null,
+      buttonText: row.button_text ?? null,
+    };
   }
 
-  /** Update a category by id. */
+  /** Update a category by id matching Supabase categories schema. */
   public async updateCategory(id: number, input: Record<string, unknown>): Promise<Category | null> {
+    const title = input.title !== undefined ? input.title : input.name !== undefined ? input.name : undefined;
     const result = await this.pool.query(
       `UPDATE categories SET 
-        name = COALESCE($2, name),
+        title = COALESCE($2, title),
         subtitle = COALESCE($3, subtitle),
         image_url = COALESCE($4, image_url),
-        category_code = COALESCE($5, category_code),
-        display_order = COALESCE($6, display_order),
-        bg = COALESCE($7, bg) 
+        button_text = COALESCE($5, button_text) 
        WHERE id = $1 
-       RETURNING id, name, subtitle, image_url AS "imageUrl", category_code AS "categoryCode", display_order AS "displayOrder", bg`,
+       RETURNING id, title, subtitle, image_url, button_text`,
       [
         id,
-        input.name,
-        input.subtitle,
-        input.imageUrl ?? input.image_url,
-        input.categoryCode ?? input.category_code,
-        input.displayOrder ?? input.display_order,
-        input.bg,
+        title !== undefined ? String(title).trim() : null,
+        input.subtitle ?? null,
+        input.imageUrl ?? input.image_url ?? null,
+        input.buttonText ?? input.button_text ?? null,
       ]
     );
-    return (result.rows[0] as Category | undefined) ?? null;
+    if (!result.rows[0]) return null;
+    const row = result.rows[0];
+    const categoryCode = row.title ? String(row.title).trim().toUpperCase() : "GENERAL";
+    return {
+      id: Number(row.id),
+      title: row.title ?? "",
+      name: row.title ?? "",
+      subtitle: row.subtitle ?? null,
+      image_url: row.image_url ?? null,
+      imageUrl: row.image_url ?? null,
+      category: categoryCode,
+      categoryCode,
+      display_order: Number(row.id),
+      displayOrder: Number(row.id),
+      created_at: null,
+      createdAt: null,
+      bg: null,
+      button_text: row.button_text ?? null,
+      buttonText: row.button_text ?? null,
+    };
   }
 
   /** Delete a category by id. */
