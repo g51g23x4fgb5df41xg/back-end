@@ -41,10 +41,13 @@ export const updateProductSchema = createProductSchema.partial();
 
 /** Validate category creation payloads. */
 export const createCategorySchema = z.object({
-  name: z.string().trim().min(1).max(100),
+  title: z.string().trim().min(1).max(100).optional(),
+  name: z.string().trim().min(1).max(100).optional(),
   subtitle: z.string().max(255).optional().nullable(),
   imageUrl: z.string().max(2048).optional().nullable(),
   image_url: z.string().max(2048).optional().nullable(),
+  buttonText: z.string().max(100).optional().nullable(),
+  button_text: z.string().max(100).optional().nullable(),
   categoryCode: z.string().trim().min(1).max(50).optional(),
   category_code: z.string().trim().min(1).max(50).optional(),
   displayOrder: z.coerce.number().int().min(0).optional(),
