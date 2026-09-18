@@ -29,13 +29,21 @@ export interface Product {
 
 /** Category returned by catalog queries. */
 export interface Category {
-  id: number;
-  name: string;
-  subtitle: string | null;
-  imageUrl: string | null;
-  categoryCode: string;
-  displayOrder: number;
-  bg: string | null;
+  id?: number | string;
+  title?: string;
+  name?: string;
+  subtitle?: string | null;
+  image_url?: string | null;
+  imageUrl?: string | null;
+  category?: string;
+  categoryCode?: string;
+  display_order?: number;
+  displayOrder?: number;
+  created_at?: string | null;
+  createdAt?: string | null;
+  bg?: string | null;
+  button_text?: string | null;
+  buttonText?: string | null;
 }
 
 /** Cursor page with an optional next cursor. */
